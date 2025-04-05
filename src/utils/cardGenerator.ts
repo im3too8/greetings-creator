@@ -167,27 +167,59 @@ export const processBulkExport = async (
 // Simple in-memory storage for templates (in a real app, use a database)
 let templates: CardTemplate[] = [];
 
+// Load templates from localStorage immediately
+const loadTemplates = () => {
+  const storedTemplates = localStorage.getItem('cardTemplates');
+  if (storedTemplates) {
+    try {
+      templates = JSON.parse(storedTemplates);
+      console.log("Loaded templates:", templates.length);
+    } catch (e) {
+      console.error("Error parsing templates:", e);
+      templates = [];
+    }
+  }
+};
+
+// Load templates on module initialization
+loadTemplates();
+
 // Mock functions to save and retrieve templates (in a real app, use a database)
 export const saveTemplate = (template: CardTemplate): void => {
+  // First load any templates that might have been saved from another tab/session
+  loadTemplates();
+  
   const existingIndex = templates.findIndex(t => t.id === template.id);
   if (existingIndex >= 0) {
     templates[existingIndex] = template;
   } else {
     templates.push(template);
   }
+  
   // Save to localStorage for persistence
-  localStorage.setItem('cardTemplates', JSON.stringify(templates));
+  try {
+    localStorage.setItem('cardTemplates', JSON.stringify(templates));
+    console.log("Saved template:", template.id, "Total templates:", templates.length);
+  } catch (e) {
+    console.error("Error saving templates to localStorage:", e);
+  }
 };
 
 export const getTemplates = (): CardTemplate[] => {
-  // Load from localStorage
-  const storedTemplates = localStorage.getItem('cardTemplates');
-  if (storedTemplates) {
-    templates = JSON.parse(storedTemplates);
-  }
+  // Reload templates to ensure we have the latest data
+  loadTemplates();
   return templates;
 };
 
 export const getTemplateById = (id: string): CardTemplate | undefined => {
-  return getTemplates().find(t => t.id === id);
+  // Reload templates to ensure we have the latest data
+  loadTemplates();
+  const template = templates.find(t => t.id === id);
+  
+  if (!template) {
+    console.error(`Template not found with id: ${id}. Available templates: ${templates.map(t => t.id).join(', ')}`);
+  }
+  
+  return template;
 };
+

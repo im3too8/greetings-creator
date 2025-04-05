@@ -1,6 +1,6 @@
 
 import { useState, useEffect, useRef } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useToast } from "@/hooks/use-toast";
 import { Label } from "@/components/ui/label";
@@ -20,29 +20,44 @@ const CardCustomizer = () => {
   const { id } = useParams<{ id: string }>();
   const { t, dir } = useLanguage();
   const { toast } = useToast();
+  const navigate = useNavigate();
   const canvasRef = useRef<HTMLCanvasElement>(null);
   
   const [template, setTemplate] = useState<CardTemplate | null>(null);
   const [name, setName] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [loadingTemplate, setLoadingTemplate] = useState(true);
   
   // Load template and render preview immediately
   useEffect(() => {
     if (id) {
+      console.log("Loading template with ID:", id);
+      setLoadingTemplate(true);
+      
       const foundTemplate = getTemplateById(id);
       if (foundTemplate) {
+        console.log("Template found:", foundTemplate.name);
         setTemplate(foundTemplate);
         
         // Render the initial preview with placeholder text
         if (canvasRef.current) {
-          renderCardToCanvas(canvasRef.current, foundTemplate);
+          renderCardToCanvas(canvasRef.current, foundTemplate).then(() => {
+            setLoadingTemplate(false);
+          }).catch(err => {
+            console.error("Error rendering template:", err);
+            setLoadingTemplate(false);
+          });
+        } else {
+          setLoadingTemplate(false);
         }
       } else {
+        console.error(`Template not found with ID: ${id}`);
         toast({
           title: t("error"),
           description: t("templateNotFound"),
           variant: "destructive",
         });
+        setLoadingTemplate(false);
       }
     }
   }, [id, t, toast]);
@@ -86,11 +101,22 @@ const CardCustomizer = () => {
     }
   };
   
-  if (!template) {
+  if (loadingTemplate) {
     return (
       <div className="flex items-center justify-center min-h-[70vh]" dir={dir}>
         <div className="text-center">
           <h2 className="text-xl font-medium">{t("loading")}</h2>
+        </div>
+      </div>
+    );
+  }
+  
+  if (!template) {
+    return (
+      <div className="flex items-center justify-center min-h-[70vh]" dir={dir}>
+        <div className="text-center space-y-4">
+          <h2 className="text-xl font-medium">{t("templateNotFound")}</h2>
+          <Button onClick={() => navigate("/")}>{t("goBack")}</Button>
         </div>
       </div>
     );
