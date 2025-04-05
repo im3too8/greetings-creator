@@ -25,13 +25,18 @@ const CardCustomizer = () => {
   const [template, setTemplate] = useState<CardTemplate | null>(null);
   const [name, setName] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [isGenerating, setIsGenerating] = useState(false);
   
+  // Load template and render preview immediately
   useEffect(() => {
     if (id) {
       const foundTemplate = getTemplateById(id);
       if (foundTemplate) {
         setTemplate(foundTemplate);
+        
+        // Render the initial preview with placeholder text
+        if (canvasRef.current) {
+          renderCardToCanvas(canvasRef.current, foundTemplate);
+        }
       } else {
         toast({
           title: t("error"),
@@ -42,30 +47,18 @@ const CardCustomizer = () => {
     }
   }, [id, t, toast]);
   
-  const handlePreview = async () => {
-    if (!template || !canvasRef.current) return;
-    
-    setIsGenerating(true);
-    
-    try {
-      await renderCardToCanvas(canvasRef.current, template, name);
-    } catch (error) {
-      console.error("Error rendering card:", error);
+  // Re-render the preview when the name changes
+  useEffect(() => {
+    if (template && canvasRef.current) {
+      renderCardToCanvas(canvasRef.current, template, name);
+    }
+  }, [name, template]);
+  
+  const handleDownload = async () => {
+    if (!template || !canvasRef.current) {
       toast({
         title: t("error"),
         description: t("somethingWentWrong"),
-        variant: "destructive",
-      });
-    } finally {
-      setIsGenerating(false);
-    }
-  };
-  
-  const handleDownload = async () => {
-    if (!template || !canvasRef.current || !name.trim()) {
-      toast({
-        title: t("error"),
-        description: t("emptyNameError"),
         variant: "destructive",
       });
       return;
@@ -74,8 +67,13 @@ const CardCustomizer = () => {
     setIsLoading(true);
     
     try {
+      // If name is empty, use a default filename, otherwise use the name
+      const fileName = name.trim() ? 
+        `greeting_card_${name.trim()}.png` : 
+        `greeting_card.png`;
+        
       await renderCardToCanvas(canvasRef.current, template, name);
-      downloadCanvasAsImage(canvasRef.current, `greeting_card_${name.trim()}.png`);
+      downloadCanvasAsImage(canvasRef.current, fileName);
     } catch (error) {
       console.error("Error generating card:", error);
       toast({
@@ -131,24 +129,13 @@ const CardCustomizer = () => {
                       />
                     </div>
                     
-                    <div className="flex gap-2">
-                      <Button 
-                        onClick={handlePreview}
-                        variant="outline"
-                        disabled={isGenerating}
-                        className="flex-1"
-                      >
-                        {isGenerating ? t("loading") : t("preview")}
-                      </Button>
-                      
-                      <Button 
-                        onClick={handleDownload}
-                        disabled={isLoading || !name.trim()}
-                        className="flex-1 apple-btn"
-                      >
-                        {isLoading ? t("loading") : t("downloadCard")}
-                      </Button>
-                    </div>
+                    <Button 
+                      onClick={handleDownload}
+                      disabled={isLoading}
+                      className="w-full apple-btn"
+                    >
+                      {isLoading ? t("loading") : t("downloadCard")}
+                    </Button>
                   </div>
                 </CardContent>
               </Card>

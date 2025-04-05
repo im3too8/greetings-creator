@@ -7,7 +7,6 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import TextEditor from "./TextEditor";
 import {
   CardTemplate,
@@ -27,6 +26,7 @@ const CardDesigner = () => {
   
   // File input ref
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const fontFileInputRef = useRef<HTMLInputElement>(null);
   
   // State for the card template
   const [template, setTemplate] = useState<CardTemplate>({
@@ -41,6 +41,8 @@ const CardDesigner = () => {
   // State for the preview
   const [selectedTextAreaId, setSelectedTextAreaId] = useState<string | null>(null);
   const [shareableLink, setShareableLink] = useState<string>("");
+  const [draggedTextArea, setDraggedTextArea] = useState<{ id: string, startX: number, startY: number, offsetX: number, offsetY: number } | null>(null);
+  const previewContainerRef = useRef<HTMLDivElement>(null);
   
   // Load existing template if editing
   useEffect(() => {
@@ -93,7 +95,56 @@ const CardDesigner = () => {
     img.src = URL.createObjectURL(file);
   };
   
-  // Handle drag and drop
+  // Handle custom font upload
+  const handleFontUpload = (e: ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    
+    // Check if the file is a font
+    if (!file.name.endsWith('.ttf') && !file.name.endsWith('.otf')) {
+      toast({
+        title: t("error"),
+        description: t("fontFileNotSupported"),
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    const fontUrl = URL.createObjectURL(file);
+    const fontName = file.name.replace(/\.[^/.]+$/, ""); // Remove extension
+    
+    // Create a font face to use the custom font
+    const fontFace = new FontFace(fontName, `url(${fontUrl})`);
+    
+    fontFace.load().then(loadedFace => {
+      // Add the font to the document
+      document.fonts.add(loadedFace);
+      
+      // Update font selector options in the TextEditor
+      toast({
+        title: t("success"),
+        description: t("fontUploaded"),
+      });
+      
+      // If a text area is selected, apply the font
+      if (selectedTextAreaId) {
+        handleUpdateTextArea({
+          ...template.textAreas.find(ta => ta.id === selectedTextAreaId)!,
+          fontFamily: fontName
+        });
+      }
+    }).catch(err => {
+      toast({
+        title: t("error"),
+        description: t("fontLoadError"),
+        variant: "destructive",
+      });
+      console.error("Font loading error:", err);
+      URL.revokeObjectURL(fontUrl);
+    });
+  };
+  
+  // Handle drag and drop of image
   const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
     e.stopPropagation();
@@ -168,6 +219,58 @@ const CardDesigner = () => {
     if (selectedTextAreaId === id) {
       setSelectedTextAreaId(null);
     }
+  };
+  
+  // Mouse down event for text area dragging
+  const handleTextAreaMouseDown = (e: React.MouseEvent, textAreaId: string) => {
+    if (!previewContainerRef.current) return;
+    
+    const textArea = template.textAreas.find(ta => ta.id === textAreaId);
+    if (!textArea) return;
+    
+    // Calculate preview container position and scale
+    const rect = previewContainerRef.current.getBoundingClientRect();
+    const scaleX = template.imageWidth / rect.width;
+    const scaleY = template.imageHeight / rect.height;
+    
+    setDraggedTextArea({
+      id: textAreaId,
+      startX: textArea.x,
+      startY: textArea.y,
+      offsetX: (e.clientX - rect.left) * scaleX - textArea.x,
+      offsetY: (e.clientY - rect.top) * scaleY - textArea.y
+    });
+    
+    setSelectedTextAreaId(textAreaId);
+    
+    e.stopPropagation();
+    e.preventDefault();
+  };
+  
+  // Mouse move event for text area dragging
+  const handleMouseMove = (e: React.MouseEvent) => {
+    if (!draggedTextArea || !previewContainerRef.current) return;
+    
+    const rect = previewContainerRef.current.getBoundingClientRect();
+    const scaleX = template.imageWidth / rect.width;
+    const scaleY = template.imageHeight / rect.height;
+    
+    const newX = (e.clientX - rect.left) * scaleX - draggedTextArea.offsetX;
+    const newY = (e.clientY - rect.top) * scaleY - draggedTextArea.offsetY;
+    
+    const textArea = template.textAreas.find(ta => ta.id === draggedTextArea.id);
+    if (textArea) {
+      handleUpdateTextArea({
+        ...textArea,
+        x: Math.max(0, Math.min(template.imageWidth - textArea.width, newX)),
+        y: Math.max(0, Math.min(template.imageHeight - textArea.height, newY))
+      });
+    }
+  };
+  
+  // Mouse up event for text area dragging
+  const handleMouseUp = () => {
+    setDraggedTextArea(null);
   };
   
   // Save the template
@@ -275,6 +378,28 @@ const CardDesigner = () => {
                 </div>
               </div>
               
+              {/* Custom Font Upload */}
+              <div className="mt-4">
+                <Label>{t("uploadFont")}</Label>
+                <input 
+                  type="file" 
+                  ref={fontFileInputRef}
+                  onChange={handleFontUpload}
+                  accept=".ttf,.otf"
+                  className="hidden"
+                />
+                <Button 
+                  variant="outline" 
+                  className="w-full mt-1"
+                  onClick={() => fontFileInputRef.current?.click()}
+                >
+                  {t("selectFontFile")}
+                </Button>
+                <p className="text-sm text-gray-500 mt-1">
+                  {t("supportedFontFormats")}
+                </p>
+              </div>
+              
               {/* Shareable Link */}
               {shareableLink && (
                 <div className="mt-4">
@@ -311,89 +436,91 @@ const CardDesigner = () => {
           </CardContent>
         </Card>
         
-        {/* Card Designer */}
+        {/* Card Designer with Integrated Text Controls */}
         <Card className="md:col-span-2">
           <CardContent className="p-6">
-            <Tabs defaultValue="design">
-              <TabsList className="mb-4">
-                <TabsTrigger value="design">{t("design")}</TabsTrigger>
-                <TabsTrigger value="text">{t("textSettings")}</TabsTrigger>
-              </TabsList>
-              
-              <TabsContent value="design" className="space-y-4">
-                {template.imageUrl ? (
-                  <div 
-                    className="relative border rounded-lg overflow-hidden"
-                    style={{ 
-                      width: "100%", 
-                      height: "auto", 
-                      maxWidth: "100%",
-                      aspectRatio: template.imageWidth / template.imageHeight
-                    }}
-                  >
-                    <img
-                      src={template.imageUrl}
-                      alt="Template"
-                      className="w-full h-full object-contain"
-                    />
-                    
-                    {/* Text Areas Overlay */}
-                    {template.textAreas.map(textArea => (
-                      <div
-                        key={textArea.id}
-                        className={`absolute border-2 cursor-move ${
-                          selectedTextAreaId === textArea.id
-                            ? "border-blue-500"
-                            : "border-transparent hover:border-gray-300"
-                        }`}
+            <div className="space-y-4">
+              {template.imageUrl ? (
+                <div 
+                  className="relative border rounded-lg overflow-hidden"
+                  style={{ 
+                    width: "100%", 
+                    height: "auto", 
+                    maxWidth: "100%",
+                    aspectRatio: template.imageWidth / template.imageHeight
+                  }}
+                  ref={previewContainerRef}
+                  onMouseMove={draggedTextArea ? handleMouseMove : undefined}
+                  onMouseUp={draggedTextArea ? handleMouseUp : undefined}
+                  onMouseLeave={draggedTextArea ? handleMouseUp : undefined}
+                >
+                  <img
+                    src={template.imageUrl}
+                    alt="Template"
+                    className="w-full h-full object-contain"
+                  />
+                  
+                  {/* Text Areas Overlay */}
+                  {template.textAreas.map(textArea => (
+                    <div
+                      key={textArea.id}
+                      className={`absolute border-2 cursor-move ${
+                        selectedTextAreaId === textArea.id
+                          ? "border-blue-500"
+                          : "border-transparent hover:border-gray-300"
+                      }`}
+                      style={{
+                        left: `${(textArea.x / template.imageWidth) * 100}%`,
+                        top: `${(textArea.y / template.imageHeight) * 100}%`,
+                        width: `${(textArea.width / template.imageWidth) * 100}%`,
+                        height: `${(textArea.height / template.imageHeight) * 100}%`,
+                      }}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setSelectedTextAreaId(textArea.id)
+                      }}
+                      onMouseDown={(e) => handleTextAreaMouseDown(e, textArea.id)}
+                    >
+                      <div 
+                        className="w-full h-full flex items-center justify-center"
                         style={{
-                          left: `${(textArea.x / template.imageWidth) * 100}%`,
-                          top: `${(textArea.y / template.imageHeight) * 100}%`,
-                          width: `${(textArea.width / template.imageWidth) * 100}%`,
-                          height: `${(textArea.height / template.imageHeight) * 100}%`,
+                          fontFamily: textArea.fontFamily,
+                          fontSize: `${textArea.fontSize * (template.imageWidth / 1080)}px`,
+                          color: textArea.color,
+                          textAlign: textArea.alignment,
+                          direction: textArea.direction,
                         }}
-                        onClick={() => setSelectedTextAreaId(textArea.id)}
                       >
-                        <div 
-                          className="w-full h-full flex items-center justify-center"
-                          style={{
-                            fontFamily: textArea.fontFamily,
-                            fontSize: `${textArea.fontSize * (template.imageWidth / 1080)}px`,
-                            color: textArea.color,
-                            textAlign: textArea.alignment,
-                            direction: textArea.direction,
-                          }}
-                        >
-                          {textArea.content}
-                        </div>
+                        {textArea.content}
                       </div>
-                    ))}
-                  </div>
-                ) : (
-                  <div className="text-center py-12 border border-dashed border-gray-200 rounded-lg">
-                    <p className="text-gray-500">{t("pleaseUploadImage")}</p>
-                  </div>
-                )}
-                
-                <Button onClick={handleAddTextArea} className="w-full">
-                  {t("addTextArea")}
-                </Button>
-              </TabsContent>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-12 border border-dashed border-gray-200 rounded-lg">
+                  <p className="text-gray-500">{t("pleaseUploadImage")}</p>
+                </div>
+              )}
               
-              <TabsContent value="text">
-                {selectedTextAreaId ? (
+              <Button onClick={handleAddTextArea} className="w-full">
+                {t("addTextArea")}
+              </Button>
+              
+              {/* Text Editor - Now directly below the preview */}
+              {selectedTextAreaId ? (
+                <div className="mt-4 p-4 border rounded-lg bg-gray-50">
                   <TextEditor
                     textArea={template.textAreas.find(ta => ta.id === selectedTextAreaId)!}
                     onUpdate={handleUpdateTextArea}
                     onDelete={() => handleDeleteTextArea(selectedTextAreaId)}
                   />
-                ) : (
-                  <div className="text-center py-12 border border-dashed border-gray-200 rounded-lg">
-                    <p className="text-gray-500">{t("selectTextAreaToEdit")}</p>
-                  </div>
-                )}
-              </TabsContent>
-            </Tabs>
+                </div>
+              ) : (
+                <div className="mt-4 text-center py-4 border border-dashed border-gray-200 rounded-lg">
+                  <p className="text-gray-500">{t("selectTextAreaToEdit")}</p>
+                </div>
+              )}
+            </div>
           </CardContent>
         </Card>
       </div>

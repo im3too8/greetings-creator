@@ -52,6 +52,14 @@ export const translations = {
     center: "Center",
     right: "Right",
     
+    // Font Upload
+    uploadFont: "Upload Custom Font",
+    selectFontFile: "Select Font File (.ttf, .otf)",
+    supportedFontFormats: "Supported formats: TTF, OTF",
+    fontUploaded: "Font uploaded successfully",
+    fontLoadError: "Failed to load font",
+    fontFileNotSupported: "File not supported. Please upload TTF or OTF font",
+    
     // Text Editor
     enterTextHere: "Enter text here",
     useNamePlaceholder: "Use [name] as a placeholder for the user's name",
@@ -158,6 +166,14 @@ export const translations = {
     left: "يسار",
     center: "وسط",
     right: "يمين",
+    
+    // Font Upload
+    uploadFont: "تحميل خط مخصص",
+    selectFontFile: "اختر ملف الخط (.ttf, .otf)",
+    supportedFontFormats: "الصيغ المدعومة: TTF, OTF",
+    fontUploaded: "تم تحميل الخط بنجاح",
+    fontLoadError: "فشل في تحميل الخط",
+    fontFileNotSupported: "نوع الملف غير مدعوم. يرجى تحميل خط بصيغة TTF أو OTF",
     
     // Text Editor
     enterTextHere: "أدخل النص هنا",

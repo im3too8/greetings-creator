@@ -45,6 +45,7 @@ export const drawTextOnCanvas = (
   // Replace [name] placeholder with the actual name if provided
   const finalContent = name ? content.replace(/\[name\]/g, name) : content;
   
+  // Set the font and prepare text rendering
   ctx.font = `${fontSize}px ${fontFamily}`;
   ctx.fillStyle = color;
   ctx.textAlign = alignment;
@@ -55,8 +56,37 @@ export const drawTextOnCanvas = (
   if (alignment === "center") textX = x + width / 2;
   if (alignment === "right") textX = x + width;
   
-  // Draw text
-  ctx.fillText(finalContent, textX, y + fontSize); // y + fontSize to position from baseline
+  // Handle text wrapping and positioning
+  const words = finalContent.split(' ');
+  let line = '';
+  let lineY = y + fontSize; // Start y position
+  
+  // For single line mode, just draw at the vertical center of the box
+  if (words.length === 1 && !words[0].includes('\n')) {
+    const verticalCenter = y + (height / 2) + (fontSize / 3); // Approximate vertical centering
+    ctx.fillText(finalContent, textX, verticalCenter);
+    return;
+  }
+  
+  // For multi-line text
+  for (let i = 0; i < words.length; i++) {
+    const testLine = line + words[i] + ' ';
+    const metrics = ctx.measureText(testLine);
+    
+    // If adding this word exceeds the width, start a new line
+    if (metrics.width > width && i > 0) {
+      ctx.fillText(line, textX, lineY);
+      line = words[i] + ' ';
+      lineY += fontSize + 5; // Line height with spacing
+    } else {
+      line = testLine;
+    }
+  }
+  
+  // Draw the last line
+  if (line.trim()) {
+    ctx.fillText(line.trim(), textX, lineY);
+  }
 };
 
 // Function to render a card to a canvas
