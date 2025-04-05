@@ -1,3 +1,4 @@
+
 export const translations = {
   en: {
     // Common
@@ -87,6 +88,7 @@ export const translations = {
     templateCreated: "Template created successfully",
     design: "Design",
     selectTextAreaToEdit: "Select a text area to edit",
+    noTemplateProvided: "No template ID was provided",
     
     // Bulk Export
     bulkExport: "Bulk Export",
@@ -205,6 +207,7 @@ export const translations = {
     templateCreated: "تم إنشاء القالب بنجاح",
     design: "تصميم",
     selectTextAreaToEdit: "اختر منطقة نصية للتعديل",
+    noTemplateProvided: "لم يتم تقديم معرف القالب",
     
     // Bulk Export
     bulkExport: "تصدير متعدد",

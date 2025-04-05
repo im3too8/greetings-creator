@@ -1,5 +1,5 @@
 
-import { createContext, useContext, useState, ReactNode, useCallback } from "react";
+import { createContext, useContext, useState, ReactNode, useCallback, useEffect } from "react";
 import { translations } from "@/utils/translations";
 
 type Language = "en" | "ar";
@@ -16,33 +16,58 @@ const LanguageContext = createContext<LanguageContextType | undefined>(undefined
 
 export const LanguageProvider = ({ children }: { children: ReactNode }) => {
   // Try to get the saved language preference or default to English
-  const savedLanguage = localStorage.getItem("language") as Language;
-  const [language, setLanguageState] = useState<Language>(savedLanguage || "en");
+  const getSavedLanguage = (): Language => {
+    try {
+      const savedLanguage = localStorage.getItem("language") as Language;
+      return savedLanguage || "en";
+    } catch (e) {
+      console.error("Error accessing localStorage:", e);
+      return "en";
+    }
+  };
+  
+  const [language, setLanguageState] = useState<Language>(getSavedLanguage());
   
   // Set the document direction based on language
   const dir = language === "ar" ? "rtl" : "ltr";
   
   // Update document attributes when language changes
   const setLanguage = useCallback((lang: Language) => {
-    setLanguageState(lang);
-    localStorage.setItem("language", lang);
-    document.documentElement.setAttribute("lang", lang);
-    document.documentElement.setAttribute("dir", lang === "ar" ? "rtl" : "ltr");
+    try {
+      setLanguageState(lang);
+      localStorage.setItem("language", lang);
+      document.documentElement.setAttribute("lang", lang);
+      document.documentElement.setAttribute("dir", lang === "ar" ? "rtl" : "ltr");
+    } catch (e) {
+      console.error("Error setting language:", e);
+    }
   }, []);
   
   // Set initial document attributes
-  useState(() => {
+  useEffect(() => {
     document.documentElement.setAttribute("lang", language);
     document.documentElement.setAttribute("dir", dir);
-  });
+  }, [language, dir]);
   
   // Translation function
-  const t = (key: TranslationKey): string => {
-    return translations[language][key] || translations.en[key] || key;
+  const t = useCallback((key: TranslationKey): string => {
+    if (!translations[language] || !translations[language][key]) {
+      // Fallback to English if the key doesn't exist in the current language
+      console.warn(`Translation key "${key}" not found in ${language}, falling back to English`);
+      return translations.en[key] || key;
+    }
+    return translations[language][key];
+  }, [language]);
+  
+  const contextValue = {
+    language,
+    setLanguage,
+    t,
+    dir
   };
   
   return (
-    <LanguageContext.Provider value={{ language, setLanguage, t, dir }}>
+    <LanguageContext.Provider value={contextValue}>
       {children}
     </LanguageContext.Provider>
   );

@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useLanguage } from "@/contexts/LanguageContext";
@@ -27,28 +28,47 @@ const CardCustomizer = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [loadingTemplate, setLoadingTemplate] = useState(true);
   
+  // Debug function to help trace issues
+  const logDebug = (message: string, data?: any) => {
+    if (data) {
+      console.log(`[CardCustomizer] ${message}:`, data);
+    } else {
+      console.log(`[CardCustomizer] ${message}`);
+    }
+  };
+  
   useEffect(() => {
     if (id) {
-      console.log("Loading template with ID:", id);
+      logDebug(`Loading template with ID: ${id}`);
       setLoadingTemplate(true);
       
       const foundTemplate = getTemplateById(id);
       if (foundTemplate) {
-        console.log("Template found:", foundTemplate.name);
+        logDebug("Template found", foundTemplate);
         setTemplate(foundTemplate);
         
         if (canvasRef.current) {
-          renderCardToCanvas(canvasRef.current, foundTemplate).then(() => {
-            setLoadingTemplate(false);
-          }).catch(err => {
-            console.error("Error rendering template:", err);
-            setLoadingTemplate(false);
-          });
+          logDebug("Canvas ref exists, rendering template...");
+          renderCardToCanvas(canvasRef.current, foundTemplate)
+            .then(() => {
+              logDebug("Template rendered successfully");
+              setLoadingTemplate(false);
+            })
+            .catch(err => {
+              logDebug("Error rendering template", err);
+              toast({
+                title: t("error"),
+                description: t("somethingWentWrong"),
+                variant: "destructive",
+              });
+              setLoadingTemplate(false);
+            });
         } else {
+          logDebug("Canvas ref is null - can't render template");
           setLoadingTemplate(false);
         }
       } else {
-        console.error(`Template not found with ID: ${id}`);
+        logDebug(`Template not found with ID: ${id}`);
         toast({
           title: t("error"),
           description: t("templateNotFound"),
@@ -56,17 +76,24 @@ const CardCustomizer = () => {
         });
         setLoadingTemplate(false);
       }
+    } else {
+      logDebug("No template ID provided in URL");
     }
   }, [id, t, toast]);
   
   useEffect(() => {
     if (template && canvasRef.current) {
-      renderCardToCanvas(canvasRef.current, template, name);
+      logDebug(`Re-rendering canvas with name: "${name}"`);
+      renderCardToCanvas(canvasRef.current, template, name)
+        .catch(err => {
+          logDebug("Error rendering template with name", err);
+        });
     }
   }, [name, template]);
   
   const handleDownload = async () => {
     if (!template || !canvasRef.current) {
+      logDebug("Cannot download: template or canvas is null");
       toast({
         title: t("error"),
         description: t("somethingWentWrong"),
@@ -75,17 +102,25 @@ const CardCustomizer = () => {
       return;
     }
     
+    logDebug("Starting download process");
     setIsLoading(true);
     
     try {
       const fileName = name.trim() ? 
         `greeting_card_${name.trim()}.png` : 
         `greeting_card.png`;
-        
+      
+      logDebug("Rendering final canvas for download");
       await renderCardToCanvas(canvasRef.current, template, name);
+      logDebug("Downloading canvas as image", fileName);
       downloadCanvasAsImage(canvasRef.current, fileName);
+      
+      toast({
+        title: t("success"),
+        description: t("downloadCard"),
+      });
     } catch (error) {
-      console.error("Error generating card:", error);
+      logDebug("Error generating card", error);
       toast({
         title: t("error"),
         description: t("somethingWentWrong"),
@@ -101,6 +136,9 @@ const CardCustomizer = () => {
       <div className="flex items-center justify-center min-h-[70vh]" dir={dir}>
         <div className="text-center">
           <h2 className="text-xl font-medium">{t("loading")}</h2>
+          <p className="mt-2 text-sm text-gray-500">
+            {id ? `ID: ${id.substring(0, 8)}...` : "No ID provided"}
+          </p>
         </div>
       </div>
     );
@@ -111,6 +149,9 @@ const CardCustomizer = () => {
       <div className="flex items-center justify-center min-h-[70vh]" dir={dir}>
         <div className="text-center space-y-4">
           <h2 className="text-xl font-medium">{t("templateNotFound")}</h2>
+          <p className="text-gray-500">
+            {id ? `ID: ${id}` : t("noTemplateProvided")}
+          </p>
           <Button onClick={() => navigate("/")}>{t("goBack")}</Button>
         </div>
       </div>
@@ -167,6 +208,8 @@ const CardCustomizer = () => {
                     <canvas 
                       ref={canvasRef}
                       className="w-full h-full object-contain"
+                      width={1080}
+                      height={720}
                     ></canvas>
                   </div>
                 </CardContent>
