@@ -1,4 +1,3 @@
-
 export const translations = {
   en: {
     // Common
@@ -113,6 +112,9 @@ export const translations = {
     somethingWentWrong: "Something went wrong",
     fileNotSupported: "File type not supported",
     emptyNameError: "Please enter a name",
+    
+    // Navigation
+    goBack: "Go Back"
   },
   
   ar: {
@@ -228,5 +230,8 @@ export const translations = {
     somethingWentWrong: "حدث خطأ ما",
     fileNotSupported: "نوع الملف غير مدعوم",
     emptyNameError: "الرجاء إدخال اسم",
+    
+    // Navigation
+    goBack: "العودة"
   }
 };

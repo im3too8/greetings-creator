@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useLanguage } from "@/contexts/LanguageContext";
@@ -28,7 +27,6 @@ const CardCustomizer = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [loadingTemplate, setLoadingTemplate] = useState(true);
   
-  // Load template and render preview immediately
   useEffect(() => {
     if (id) {
       console.log("Loading template with ID:", id);
@@ -39,7 +37,6 @@ const CardCustomizer = () => {
         console.log("Template found:", foundTemplate.name);
         setTemplate(foundTemplate);
         
-        // Render the initial preview with placeholder text
         if (canvasRef.current) {
           renderCardToCanvas(canvasRef.current, foundTemplate).then(() => {
             setLoadingTemplate(false);
@@ -62,7 +59,6 @@ const CardCustomizer = () => {
     }
   }, [id, t, toast]);
   
-  // Re-render the preview when the name changes
   useEffect(() => {
     if (template && canvasRef.current) {
       renderCardToCanvas(canvasRef.current, template, name);
@@ -82,7 +78,6 @@ const CardCustomizer = () => {
     setIsLoading(true);
     
     try {
-      // If name is empty, use a default filename, otherwise use the name
       const fileName = name.trim() ? 
         `greeting_card_${name.trim()}.png` : 
         `greeting_card.png`;
