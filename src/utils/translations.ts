@@ -33,6 +33,8 @@ export const translations = {
     editTemplate: "Edit Template",
     uploadImage: "Upload Image",
     dragDropImage: "Drag and drop an image here, or click to select",
+    noTemplatesYet: "No templates created yet",
+    edit: "Edit",
     
     // Card Designer
     cardDesigner: "Card Designer",
@@ -46,14 +48,42 @@ export const translations = {
     textDirection: "Text Direction",
     leftToRight: "Left to Right",
     rightToLeft: "Right to Left",
+    left: "Left",
     center: "Center",
+    right: "Right",
+    
+    // Text Editor
+    enterTextHere: "Enter text here",
+    useNamePlaceholder: "Use [name] as a placeholder for the user's name",
+    selectFont: "Select font",
+    selectAlignment: "Select alignment",
+    selectDirection: "Select direction",
+    xPosition: "X Position",
+    yPosition: "Y Position",
+    width: "Width",
+    height: "Height",
+    deleteTextArea: "Delete Text Area",
     
     // Public Interface
     customizeCard: "Customize Card",
     yourName: "Your Name",
     
+    // Card Template
+    templateName: "Template Name",
+    enterTemplateName: "Enter template name",
+    templateNotFound: "Template not found",
+    pleaseUploadImage: "Please upload an image",
+    pleaseEnterName: "Please enter a name",
+    shareableLink: "Shareable Link",
+    success: "Success",
+    templateUpdated: "Template updated successfully",
+    templateCreated: "Template created successfully",
+    design: "Design",
+    selectTextAreaToEdit: "Select a text area to edit",
+    
     // Bulk Export
     bulkExport: "Bulk Export",
+    singleCard: "Single Card",
     uploadExcel: "Upload Excel/CSV",
     downloadAll: "Download All",
     processingFiles: "Processing Files...",
@@ -61,6 +91,9 @@ export const translations = {
     invalidFile: "Invalid file format. Please upload an Excel or CSV file",
     exportComplete: "Export Complete!",
     downloadZip: "Download ZIP",
+    bulkExportDescription: "Upload a CSV file with a list of names to generate cards in bulk",
+    noNamesFound: "No names found in the file",
+    cardsGenerated: "cards generated",
     
     // Landing Page
     welcome: "Welcome to Greeting Card Generator",
@@ -107,6 +140,8 @@ export const translations = {
     editTemplate: "تعديل القالب",
     uploadImage: "تحميل صورة",
     dragDropImage: "اسحب وأفلت صورة هنا، أو انقر للتحديد",
+    noTemplatesYet: "لم يتم إنشاء أي قوالب بعد",
+    edit: "تعديل",
     
     // Card Designer
     cardDesigner: "مصمم البطاقات",
@@ -120,14 +155,42 @@ export const translations = {
     textDirection: "اتجاه النص",
     leftToRight: "من اليسار إلى اليمين",
     rightToLeft: "من اليمين إلى اليسار",
+    left: "يسار",
     center: "وسط",
+    right: "يمين",
+    
+    // Text Editor
+    enterTextHere: "أدخل النص هنا",
+    useNamePlaceholder: "استخدم [name] كمكان للاسم المستخدم",
+    selectFont: "اختر الخط",
+    selectAlignment: "اختر المحاذاة",
+    selectDirection: "اختر الاتجاه",
+    xPosition: "الموضع الأفقي",
+    yPosition: "الموضع الرأسي",
+    width: "العرض",
+    height: "الارتفاع",
+    deleteTextArea: "حذف منطقة النص",
     
     // Public Interface
     customizeCard: "تخصيص البطاقة",
     yourName: "اسمك",
     
+    // Card Template
+    templateName: "اسم القالب",
+    enterTemplateName: "أدخل اسم القالب",
+    templateNotFound: "لم يتم العثور على القالب",
+    pleaseUploadImage: "الرجاء تحميل صورة",
+    pleaseEnterName: "الرجاء إدخال اسم",
+    shareableLink: "رابط المشاركة",
+    success: "تم بنجاح",
+    templateUpdated: "تم تحديث القالب بنجاح",
+    templateCreated: "تم إنشاء القالب بنجاح",
+    design: "تصميم",
+    selectTextAreaToEdit: "اختر منطقة نصية للتعديل",
+    
     // Bulk Export
     bulkExport: "تصدير متعدد",
+    singleCard: "بطاقة واحدة",
     uploadExcel: "تحميل ملف إكسل/CSV",
     downloadAll: "تنزيل الكل",
     processingFiles: "جاري معالجة الملفات...",
@@ -135,6 +198,9 @@ export const translations = {
     invalidFile: "صيغة الملف غير صالحة. يرجى تحميل ملف إكسل أو CSV",
     exportComplete: "اكتمل التصدير!",
     downloadZip: "تنزيل الملف المضغوط",
+    bulkExportDescription: "قم بتحميل ملف CSV يحتوي على قائمة أسماء لإنشاء بطاقات بشكل جماعي",
+    noNamesFound: "لم يتم العثور على أسماء في الملف",
+    cardsGenerated: "تم إنشاء البطاقات",
     
     // Landing Page
     welcome: "مرحبًا بك في منشئ بطاقات التهنئة",
