@@ -29,7 +29,7 @@ export const LanguageProvider = ({ children }: { children: ReactNode }) => {
   const [language, setLanguageState] = useState<Language>(getSavedLanguage());
   
   // Set the document direction based on language
-  const dir = language === "ar" ? "rtl" : "ltr";
+  const dir = language === "ar" ? "rtl" : "ltr" as const; // Use 'as const' to narrow the type
   
   // Update document attributes when language changes
   const setLanguage = useCallback((lang: Language) => {
@@ -59,7 +59,7 @@ export const LanguageProvider = ({ children }: { children: ReactNode }) => {
     return translations[language][key];
   }, [language]);
   
-  const contextValue = {
+  const contextValue: LanguageContextType = {
     language,
     setLanguage,
     t,
