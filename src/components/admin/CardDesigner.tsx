@@ -16,6 +16,8 @@ import {
   getTemplateById,
   generateShareableLink
 } from "@/utils/cardGenerator";
+import { uploadTemplateImage, uploadFontFile } from '@/lib/storage'
+import { saveTemplate } from '@/lib/saveTemplate'
 
 const CardDesigner = () => {
   const { t, dir } = useLanguage();
@@ -274,15 +276,36 @@ const CardDesigner = () => {
   };
   
   // Save the template
-  const handleSave = () => {
-    if (!template.imageUrl) {
-      toast({
-        title: t("error"),
-        description: t("pleaseUploadImage"),
-        variant: "destructive",
-      });
-      return;
-    }
+const handleSave = async () => {
+  if (!template.imageUrl || !template.name.trim()) {
+    toast.error("يرجى تعبئة اسم القالب وإرفاق صورة");
+    return;
+  }
+
+  try {
+    // ارفع الصورة إذا عندك ملف مباشر (مثلاً من ref)
+    const imageUrl = await uploadTemplateImage(template.imageFile) // غيّر حسب المتغير الفعلي
+
+    // إذا فيه خط خاص مرفق
+    const fontUrl = template.fontFile
+      ? await uploadFontFile(template.fontFile)
+      : undefined
+
+    await saveTemplate({
+      name: template.name,
+      image_url: imageUrl,
+      image_width: template.imageWidth,
+      image_height: template.imageHeight,
+      font_url: fontUrl,
+      text_areas: template.textAreas
+    })
+
+    toast.success("تم حفظ القالب بنجاح!")
+  } catch (err) {
+    console.error("خطأ أثناء حفظ القالب:", err)
+    toast.error("فشل حفظ القالب.")
+  }
+}
     
     if (!template.name.trim()) {
       toast({
