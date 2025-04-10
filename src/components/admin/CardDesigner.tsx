@@ -306,30 +306,6 @@ const handleSave = async () => {
     toast.error("فشل حفظ القالب.")
   }
 }
-    
-    if (!template.name.trim()) {
-      toast({
-        title: t("error"),
-        description: t("pleaseEnterName"),
-        variant: "destructive",
-      });
-      return;
-    }
-    
-    saveTemplate(template);
-    
-    const link = generateShareableLink(template.id);
-    setShareableLink(link);
-    
-    toast({
-      title: t("success"),
-      description: isEditing ? t("templateUpdated") : t("templateCreated"),
-    });
-    
-    if (!isEditing) {
-      navigate(`/admin/edit/${template.id}`);
-    }
-  };
   
   // Copy shareable link to clipboard
   const copyShareableLink = () => {
