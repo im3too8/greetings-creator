@@ -274,39 +274,7 @@ const CardDesigner = () => {
   const handleMouseUp = () => {
     setDraggedTextArea(null);
   };
-  
-  // Save the template
-const handleSave = async () => {
-  if (!template.imageUrl || !template.name.trim()) {
-    toast.error("يرجى تعبئة اسم القالب وإرفاق صورة");
-    return;
-  }
-
-  try {
-    // ارفع الصورة إذا عندك ملف مباشر (مثلاً من ref)
-    const imageUrl = await uploadTemplateImage(template.imageFile) // غيّر حسب المتغير الفعلي
-
-    // إذا فيه خط خاص مرفق
-    const fontUrl = template.fontFile
-      ? await uploadFontFile(template.fontFile)
-      : undefined
-
-    await saveTemplateToDB({
-      name: template.name,
-      image_url: imageUrl,
-      image_width: template.imageWidth,
-      image_height: template.imageHeight,
-      font_url: fontUrl,
-      text_areas: template.textAreas
-    })
-
-    toast.success("تم حفظ القالب بنجاح!")
-  } catch (err) {
-    console.error("خطأ أثناء حفظ القالب:", err)
-    toast.error("فشل حفظ القالب.")
-  }
-};
-  
+    
   // Copy shareable link to clipboard
   const copyShareableLink = () => {
     navigator.clipboard.writeText(shareableLink);
