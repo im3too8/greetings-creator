@@ -493,6 +493,5 @@ const CardDesigner = () => {
       </div>
     </div>
   );
-};
 
 export default CardDesigner;
