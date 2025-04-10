@@ -17,7 +17,7 @@ import {
   generateShareableLink
 } from "@/utils/cardGenerator";
 import { uploadTemplateImage, uploadFontFile } from '@/lib/storage'
-import { saveTemplate } from '@/lib/saveTemplate'
+import { saveTemplate as saveTemplateToDB } from '@/lib/saveTemplate'
 
 const CardDesigner = () => {
   const { t, dir } = useLanguage();
@@ -291,7 +291,7 @@ const handleSave = async () => {
       ? await uploadFontFile(template.fontFile)
       : undefined
 
-    await saveTemplate({
+    await saveTemplateToDB({
       name: template.name,
       image_url: imageUrl,
       image_width: template.imageWidth,
