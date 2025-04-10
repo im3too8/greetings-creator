@@ -305,7 +305,7 @@ const handleSave = async () => {
     console.error("خطأ أثناء حفظ القالب:", err)
     toast.error("فشل حفظ القالب.")
   }
-}
+};
   
   // Copy shareable link to clipboard
   const copyShareableLink = () => {
