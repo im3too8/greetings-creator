@@ -7,6 +7,7 @@ import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Link } from "react-router-dom";
 import { Plus } from "lucide-react";
 import type { CardTemplate } from "@/utils/cardGenerator";
+import { deleteTemplate } from "@/lib/deleteTemplate";
 
 const AdminPanel = () => {
   const { t, dir } = useLanguage();
@@ -52,21 +53,35 @@ const AdminPanel = () => {
                   className="w-full h-48 object-cover"
                 />
               </CardContent>
-              <CardFooter className="flex justify-between bg-white p-4">
-                <span className="font-medium">{template.name}</span>
-                <div className="space-x-2">
-                  <Link to={`/admin/edit/${template.id}`}>
-                    <Button variant="outline" size="sm">
-                      {t("edit")}
-                    </Button>
-                  </Link>
-                  <Link to={`/card/${template.id}`} target="_blank">
-                    <Button variant="ghost" size="sm">
-                      {t("preview")}
-                    </Button>
-                  </Link>
-                </div>
-              </CardFooter>
+<CardFooter className="flex justify-between bg-white p-4">
+  <span className="font-medium">{template.name}</span>
+  <div className="space-x-2">
+    <Link to={`/admin/edit/${template.id}`}>
+      <Button variant="outline" size="sm">
+        {t("edit")}
+      </Button>
+    </Link>
+    <Link to={`/card/${template.id}`} target="_blank">
+      <Button variant="ghost" size="sm">
+        {t("preview")}
+      </Button>
+    </Link>
+    <Button
+      variant="destructive"
+      size="sm"
+      onClick={async () => {
+        try {
+          await deleteTemplate(template.id);
+          setTemplates(prev => prev.filter(t => t.id !== template.id));
+        } catch (err) {
+          console.error(err);
+        }
+      }}
+    >
+      {t("delete")}
+    </Button>
+  </div>
+</CardFooter>
             </Card>
           ))}
         </div>
