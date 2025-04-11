@@ -274,7 +274,56 @@ const CardDesigner = () => {
   const handleMouseUp = () => {
     setDraggedTextArea(null);
   };
-    
+
+// Save the template
+const handleSave = async () => {
+  if (!template.imageUrl || !template.name.trim()) {
+    toast({
+      title: t("error"),
+      description: t("pleaseEnterName"),
+      variant: "destructive",
+    });
+    return;
+  }
+
+  try {
+    // تأكد أنك تستخدم ملف الصورة الحقيقي من ref
+    const file = fileInputRef.current?.files?.[0];
+    const imageUrl = file ? await uploadTemplateImage(file) : template.imageUrl;
+
+    const fontFile = fontFileInputRef.current?.files?.[0];
+    const fontUrl = fontFile ? await uploadFontFile(fontFile) : undefined;
+
+    await saveTemplateToDB({
+      name: template.name,
+      image_url: imageUrl,
+      image_width: template.imageWidth,
+      image_height: template.imageHeight,
+      font_url: fontUrl,
+      text_areas: template.textAreas
+    });
+
+    const link = generateShareableLink(template.id);
+    setShareableLink(link);
+
+    toast({
+      title: t("success"),
+      description: isEditing ? t("templateUpdated") : t("templateCreated"),
+    });
+
+    if (!isEditing) {
+      navigate(`/admin/edit/${template.id}`);
+    }
+  } catch (err) {
+    console.error("Save error:", err);
+    toast({
+      title: t("error"),
+      description: t("saveFailed"),
+      variant: "destructive",
+    });
+  }
+};
+  
   // Copy shareable link to clipboard
   const copyShareableLink = () => {
     navigator.clipboard.writeText(shareableLink);
