@@ -542,5 +542,5 @@ const handleSave = async () => {
       </div>
     </div>
   );
-
+};
 export default CardDesigner;
